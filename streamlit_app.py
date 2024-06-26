@@ -1,23 +1,33 @@
 import streamlit as st
 from typing import Generator
 from groq import Groq
+from streamlit_extras.app_logo import add_logo
 
-st.set_page_config(page_icon="💬", layout="wide",
-                   page_title="Groq Goes Brrrrrrrr...")
+logo_ref = "https://www.sonda.com/ResourcePackages/Sonda/assets/images/logo-sonda.svg"
+logo_local = "assets/logo-sonda.png"
+# # add_logo(logo_ref, height=200)
+
+st.set_page_config(
+                    page_icon='images/favicon.png',
+                    layout="wide",
+                    page_title="SONDA | AI Playground")
+
+# st.image("images/logo-sonda.png")
+st.subheader("Chatbot",  anchor=False)
+
+# Customize the sidebar
+markdown = """
+   Entre em contato: www.sonda.com
+"""
+
+with st.sidebar:
+    st.image('images/logo-sonda.png')
+    st.subheader("", divider="blue", anchor=False)
+    st.header("Converse com a inteligência artificial")    
+    st.info(markdown)
 
 
-def icon(emoji: str):
-    """Shows an emoji as a Notion-style page icon."""
-    st.write(
-        f'<span style="font-size: 78px; line-height: 1">{emoji}</span>',
-        unsafe_allow_html=True,
-    )
-
-
-icon("🏎️")
-
-st.subheader("Groq Chat Streamlit App", divider="rainbow", anchor=False)
-
+# Client do modelo     
 client = Groq(
     api_key=st.secrets["GROQ_API_KEY"],
 )
@@ -29,7 +39,6 @@ if "messages" not in st.session_state:
 if "selected_model" not in st.session_state:
     st.session_state.selected_model = None
 
-# Define model details
 models = {
     "gemma-7b-it": {"name": "Gemma-7b-it", "tokens": 8192, "developer": "Google"},
     "llama2-70b-4096": {"name": "LLaMA2-70b-chat", "tokens": 4096, "developer": "Meta"},
@@ -37,13 +46,12 @@ models = {
     "llama3-8b-8192": {"name": "LLaMA3-8b-8192", "tokens": 8192, "developer": "Meta"},
     "mixtral-8x7b-32768": {"name": "Mixtral-8x7b-Instruct-v0.1", "tokens": 32768, "developer": "Mistral"},
 }
-
 # Layout for model selection and max_tokens slider
 col1, col2 = st.columns(2)
 
 with col1:
     model_option = st.selectbox(
-        "Choose a model:",
+        "Escolha o modelo:",
         options=list(models.keys()),
         format_func=lambda x: models[x]["name"],
         index=4  # Default to mixtral
@@ -65,7 +73,7 @@ with col2:
         # Default value or max allowed if less
         value=min(32768, max_tokens_range),
         step=512,
-        help=f"Adjust the maximum number of tokens (words) for the model's response. Max for selected model: {max_tokens_range}"
+        help=f"Ajuste o número máximo de tokens (palavras) para a resposta do modelo. Máx. para modelo selecionado: {max_tokens_range}"
     )
 
 # Display chat messages from history on app rerun
@@ -82,7 +90,7 @@ def generate_chat_responses(chat_completion) -> Generator[str, None, None]:
             yield chunk.choices[0].delta.content
 
 
-if prompt := st.chat_input("Enter your prompt here..."):
+if prompt := st.chat_input("Como posso ajudar?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("user", avatar='👨‍💻'):
